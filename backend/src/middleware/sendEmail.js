@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 import config from '../config/config.js';
 
-export const sendEmail = async (data) => {
+const sendEmail = async (data) => {
     try {        // Create a transporter using SMTP
         var transport = nodemailer.createTransport({
         host: config.SMTP_HOST,
@@ -26,3 +26,5 @@ export const sendEmail = async (data) => {
         console.log("Email not send: ", error)
     }
 }
+
+export default sendEmail

@@ -4,8 +4,11 @@ import dotenv from 'dotenv'
 import config from "../config/config.js";
 dotenv.config()
 import bcrypt from 'bcryptjs'
+import sendEmail from "../middleware/sendEmail.js";
+import crypto from 'crypto'
 
 const NODE_ENV = config.NODE_ENV;
+const OTP_EXPIRES_MINUTES = 15;
 
 export const register = async (req, res) => {
     const { username, email, password } = req.body;    
@@ -27,10 +30,16 @@ export const register = async (req, res) => {
         // Hash password
         const hashPass = await bcrypt.hash(password, 10);
 
+        // const otp = Math.floor(100000 + Math.random() * 900000)
+        const otp = crypto.randomBytes(100000, 999999).toString();
+        const verifyEmailOtpExpire = Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000
+
         const user = new User({
             username,
             email,
             password: hashPass,
+            verifyEmailOtp: otp,
+            verifyEmailOtpExpire,
         });
 
         await user.save();
@@ -39,6 +48,8 @@ export const register = async (req, res) => {
             username: user.username,
             email: user.email
         };
+        const data = {};
+        sendEmail(data)
         return res.status(201).json({
             success: true,
             message: "Registered successfully", // Fixed typo "white registering" -> "while registering"
